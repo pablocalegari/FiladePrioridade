@@ -95,7 +95,7 @@ Comparação de tempo de execução entre cenários.
 
 ## 📦 Como Executar
 
-```bash
+`bash`
 # Clone o repositório
 git clone https://github.com/seu-usuario/seu-repo.git
 
@@ -107,3 +107,8 @@ gcc main.c -o programa
 
 # Execute
 ./programa
+## 👥 Integrantes
+Douglas Leal
+Gustavo Vaz
+Luiz Guilherme Romão
+Pablo Antonio Calegari
