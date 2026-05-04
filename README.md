@@ -93,22 +93,11 @@ Comparação de tempo de execução entre cenários.
 
 ---
 
-## 📦 Como Executar
-
-`bash`
-# Clone o repositório
-git clone https://github.com/seu-usuario/seu-repo.git
-
-# Acesse a pasta
-cd seu-repo
-
-# Compile o código
-gcc main.c -o programa
-
 # Execute
 ./programa
 ## 👥 Integrantes
-Douglas Leal
-Gustavo Vaz
-Luiz Guilherme Romão
-Pablo Antonio Calegari
+
+- Douglas Leal
+- Gustavo Vaz
+- Luiz Guilherme Romão
+- Pablo Antonio Calegari
