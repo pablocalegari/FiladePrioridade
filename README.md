@@ -92,9 +92,6 @@ Comparação de tempo de execução entre cenários.
 - Ferramenta de análise: `Valgrind`
 
 ---
-
-# Execute
-./programa
 ## 👥 Integrantes
 
 - Douglas Leal
