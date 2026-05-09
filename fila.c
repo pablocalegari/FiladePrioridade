@@ -13,6 +13,8 @@ int comparar(Paciente a, Paciente b) {
     return a.prioridade > b.prioridade;
 }
 
+
+
 void inserir(FilaPrioridade *f, Paciente p) {
     int i = f->tamanho++;
     f->dados[i] = p;
