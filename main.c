@@ -10,16 +10,8 @@
 #define CLEAR "clear"
 #endif
 
-// ===== CORES =====
-#define RESET "\033[0m"
-#define VERDE "\033[32m"
-#define VERMELHO "\033[31m"
-#define AMARELO "\033[33m"
-#define AZUL "\033[34m"
-
-// ===== MENU =====
 void menu() {
-    printf(AZUL "\n===== SISTEMA UPA =====\n" RESET);
+    printf("\nSISTEMA FILA DE PRIORIDADE\n");
     printf("1 - Adicionar paciente\n");
     printf("2 - Atender paciente\n");
     printf("3 - Desfazer atendimento\n");
@@ -27,25 +19,23 @@ void menu() {
     printf("5 - Mostrar fila (ordenada)\n");
     printf("6 - Mostrar pilha de atendidos\n");
     printf("0 - Sair\n");
-    printf("Opcao: ");
+    printf("Escolha: ");
 }
 
-// ===== VALIDAÇÕES =====
 int lerInt(const char *msg) {
     int valor;
     while (1) {
         printf("%s", msg);
         if (scanf("%d", &valor) == 1) return valor;
-
-        printf(VERMELHO "Entrada invalida. Tente novamente.\n" RESET);
-        while (getchar() != '\n'); // limpa buffer
+        printf("Entrada invalida. Tente novamente.\n");
+        while (getchar() != '\n');
     }
 }
 
-// ===== COMPARADOR PARA ORDENAÇÃO =====
-int cmp(const void *a, const void *b) {
-    Paciente *p1 = (Paciente*)a;
-    Paciente *p2 = (Paciente*)b;
+// Comparador para exibição ordenada (não altera o heap original)
+int comparadorParaExibicao(const void *a, const void *b) {
+    Paciente *p1 = (Paciente *)a;
+    Paciente *p2 = (Paciente *)b;
 
     if (p1->prioridade == p2->prioridade)
         return p1->horaChegada - p2->horaChegada;
@@ -53,37 +43,40 @@ int cmp(const void *a, const void *b) {
     return p2->prioridade - p1->prioridade;
 }
 
-// ===== MOSTRAR FILA ORDENADA =====
+// CORREÇÃO: usa malloc em vez de array na stack para evitar stack overflow
 void mostrarFilaOrdenada(FilaPrioridade *fila) {
     if (fila->tamanho == 0) {
-        printf(AMARELO "Fila vazia.\n" RESET);
+        printf("Fila vazia.\n");
         return;
     }
 
-    Paciente copia[MAX];
+    Paciente *copia = malloc(fila->tamanho * sizeof(Paciente));
+    if (!copia) {
+        printf("Erro de alocacao de memoria.\n");
+        return;
+    }
+
     for (int i = 0; i < fila->tamanho; i++)
         copia[i] = fila->dados[i];
 
-    qsort(copia, fila->tamanho, sizeof(Paciente), cmp);
+    qsort(copia, fila->tamanho, sizeof(Paciente), comparadorParaExibicao);
 
-    printf(VERDE "\n--- FILA ORDENADA ---\n" RESET);
+    printf("\n--- FILA DE ATENDIMENTO (ORDENADA) ---\n");
     for (int i = 0; i < fila->tamanho; i++) {
-        printf("ID:%d | Nome:%s | Prio:%d | Chegada:%d\n",
-            copia[i].id,
-            copia[i].nome,
-            copia[i].prioridade,
-            copia[i].horaChegada);
+        printf("ID: %d | Nome: %s | Prioridade: %d | Chegada: %d\n",
+            copia[i].id, copia[i].nome, copia[i].prioridade, copia[i].horaChegada);
     }
+
+    free(copia); // IMPORTANTE: libera a memória alocada
 }
 
-// ===== MOSTRAR PILHA =====
 void mostrarPilha(Pilha *pilha) {
     if (vazia(pilha)) {
-        printf(AMARELO "Nenhum paciente atendido.\n" RESET);
+        printf("Nenhum paciente atendido.\n");
         return;
     }
 
-    printf(VERDE "\n--- PILHA DE ATENDIDOS ---\n" RESET);
+    printf("\nPILHA DE ATENDIDOS\n");
 
     No *atual = pilha->topo;
     while (atual != NULL) {
@@ -95,12 +88,12 @@ void mostrarPilha(Pilha *pilha) {
     }
 }
 
-// ===== MAIN =====
 int main() {
     FilaPrioridade fila = {.tamanho = 0};
     Pilha pilha = {.topo = NULL};
 
     int opcao, contador = 0;
+    int tempoGlobal = 0;
 
     do {
         system(CLEAR);
@@ -110,18 +103,20 @@ int main() {
         switch (opcao) {
 
             case 1: {
-                Paciente p;
+                Paciente p = {0};
 
                 p.id = lerInt("ID: ");
 
                 printf("Nome: ");
-                scanf("%s", p.nome);
+                // CORREÇÃO: scanf correto para ler nome com espacos
+                scanf(" %99[^\n]", p.nome);
 
                 do {
                     p.gravidade = lerInt("Gravidade (1-5): ");
                 } while (p.gravidade < 1 || p.gravidade > 5);
 
-                p.horaChegada = lerInt("Hora chegada: ");
+                tempoGlobal++;
+                p.horaChegada = tempoGlobal;
                 p.prioridade = p.gravidade;
 
                 inserir(&fila, p);
@@ -130,25 +125,26 @@ int main() {
                 if (contador % 5 == 0)
                     aumentarPrioridade(&fila);
 
-                printf(VERDE "Paciente adicionado!\n" RESET);
+                printf("Paciente adicionado!\n");
                 break;
             }
 
             case 2:
                 if (fila.tamanho == 0) {
-                    printf(AMARELO "Fila vazia.\n" RESET);
+                    printf("Fila vazia.\n");
                 } else {
-                    atender(&fila, &pilha, rand() % 100);
-                    printf(VERDE "Paciente atendido.\n" RESET);
+                    tempoGlobal++;
+                    atender(&fila, &pilha, tempoGlobal);
+                    printf("Paciente atendido.\n");
                 }
                 break;
 
             case 3:
                 if (vazia(&pilha)) {
-                    printf(AMARELO "Nada para desfazer.\n" RESET);
+                    printf("Nada para desfazer.\n");
                 } else {
                     desfazer(&pilha, &fila);
-                    printf(VERDE "Atendimento desfeito.\n" RESET);
+                    printf("Atendimento desfeito.\n");
                 }
                 break;
 
@@ -161,7 +157,7 @@ int main() {
                 processarArquivo(nome, &fila, &pilha);
                 clock_t fim = clock();
 
-                printf(VERDE "Processado em %.4f segundos\n" RESET,
+                printf("Processado em %.4f segundos\n",
                     (double)(fim - ini) / CLOCKS_PER_SEC);
                 break;
             }
@@ -179,13 +175,18 @@ int main() {
                 break;
 
             default:
-                printf(VERMELHO "Opcao invalida.\n" RESET);
+                printf("Opcao invalida.\n");
         }
 
-        printf("\nPressione ENTER para continuar...");
-        getchar(); getchar();
+        if (opcao != 0) {
+            printf("\nPressione ENTER para continuar...");
+            while (getchar() != '\n');
+            getchar();
+        }
 
     } while (opcao != 0);
+
+    limparPilha(&pilha);
 
     return 0;
 }
