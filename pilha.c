@@ -19,3 +19,9 @@ Paciente pop(Pilha *p) {
 int vazia(Pilha *p) {
     return p->topo == NULL;
 }
+//limpar a pilha quando encerrar o programa
+void limparPilha(Pilha *p) {
+    while (!vazia(p)) {
+        pop(p); // O pop já faz o free
+    }
+}
