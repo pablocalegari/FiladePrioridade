@@ -15,5 +15,5 @@ typedef struct {
 void push(Pilha *p, Paciente paciente);
 Paciente pop(Pilha *p);
 int vazia(Pilha *p);
-
+void limparPilha(Pilha *p); 
 #endif
